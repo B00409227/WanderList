@@ -1,0 +1,91 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Admin access function
+    function isAdmin() {
+      return request.auth != null && request.auth.token.email == 'mhabz1129@gmail.com';
+    }
+
+    // General access for all documents - adjust this if too permissive
+    match /{document=**} {
+      allow read, write: if request.auth != null;
+    }
+
+    // Authenticated users can read and write reviews
+    match /reviews/{document=**} {
+      allow read, write: if request.auth != null;
+    }
+
+    // Admin-only access for admin collections
+    match /adminLocations/{document=**} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.token.email == 'mhabz1129@gmail.com';
+    }
+    match /adminNotes/{document=**} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.token.email == 'mhabz1129@gmail.com';
+    }
+    match /adminPhotos/{document=**} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.token.email == 'mhabz1129@gmail.com';
+    }
+    match /adminCollections/{document=**} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.token.email == 'mhabz1129@gmail.com';
+    }
+
+    // General locations collection, with admin-only subcollections for notes and photos
+    match /locations/{locationId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && (
+        resource.data.userId == request.auth.uid || isAdmin()
+      );
+
+      // Admin-only access for subcollections in locations
+      match /adminNotes/{noteId} {
+        allow read: if true;
+        allow write: if request.auth != null && request.auth.token.email == 'mhabz1129@gmail.com';
+      }
+      match /adminPhotos/{photoId} {
+        allow read: if true;
+        allow write: if request.auth != null && request.auth.token.email == 'mhabz1129@gmail.com';
+      }
+    }
+
+    // User-specific collections: itineraries, notes, photos, planned locations, and routes
+    match /userItineraries/{document=**} {
+      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
+    }
+    match /notes/{noteId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && (
+        resource.data.userId == request.auth.uid || isAdmin()
+      );
+    }
+    match /photos/{photoId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && (
+        resource.data.userId == request.auth.uid || isAdmin()
+      );
+    }
+    match /plannedLocations/{locationId} {
+      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
+    }
+    match /plannedRoutes/{routeId} {
+      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
+    }
+
+    // User profiles with both user-specific and admin access
+    match /users/{userId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && (
+        userId == request.auth.uid || isAdmin()
+      );
+
+      // Subcollection 'wanderlist' accessible only by the respective user
+      match /wanderlist/{itemId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+  }
+}

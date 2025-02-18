@@ -1,0 +1,8 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "app.web.wanderlist_59fb6.twa",
+    "sha256_cert_fingerprints": ["99:74:F2:66:ED:90:F1:1C:A9:EA:8E:55:30:C1:3B:21:EA:47:EB:01:30:62:C0:E6:4D:E7:FD:92:1C:F5:A8:33"]
+  }
+}]
